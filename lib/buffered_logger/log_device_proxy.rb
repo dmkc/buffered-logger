@@ -14,13 +14,9 @@ class BufferedLogger
     end
 
     def end
-      @logdev.write(string_io.string)
+      result = string_io.string
       destroy_thread_local
-    end
-
-    def flush
-      @logdev.write(string_io.string)
-      string_io.string.clear
+      result
     end
 
     def start
@@ -33,7 +29,7 @@ class BufferedLogger
 
     def write(message)
       if started?
-        string_io.write(message)
+        string_io << message.to_s + "\n"
       else
         @logdev.write(message)
       end
@@ -45,11 +41,11 @@ class BufferedLogger
 
     private
     def string_io
-      Thread.current.thread_variable_get(THREAD_LOCAL_VAR_NAME)
+      Thread.current[:string_io]
     end
 
     def string_io=(string_io)
-      Thread.current.thread_variable_set(THREAD_LOCAL_VAR_NAME,string_io)
+      Thread.current[:string_io] = string_io
     end
 
     def destroy_thread_local

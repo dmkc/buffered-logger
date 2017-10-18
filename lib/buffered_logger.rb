@@ -13,12 +13,13 @@ class BufferedLogger < ::Logger
 
   def end
     raise NotStartedError, "not started" unless started?
-    @logdev.end
+    message = @logdev.end
+    @logdev.write(
+      format_message(
+        nil, Time.now, @progname, message
+      )
+    ) unless message.empty?
     nil
-  end
-
-  def flush
-    @logdev.flush
   end
 
   def start(&block)
@@ -43,4 +44,14 @@ class BufferedLogger < ::Logger
   def current_log
     @logdev.current_log
   end
+
+  private
+  def format_message(severity, datetime, progname, msg)
+    if started?
+      msg
+    else
+      super(severity, datetime, progname, msg)
+    end
+  end
+
 end
