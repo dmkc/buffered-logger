@@ -27,35 +27,35 @@ describe BufferedLogger::LogDeviceProxy do
     assert @proxy.started?
   end
 
-  it "should call write once started and ended" do
-    @logdev.expects(:write)
-    @proxy.start
-    @proxy.write("message")
-    @proxy.end
-  end
-
   it "should buffer all writes and write them once" do
-    @logdev.expects(:write).with("123")
     @proxy.start
     @proxy.write("1")
     @proxy.write("2")
     @proxy.write("3")
-    @proxy.end
+    assert_equal "1\n2\n3", @proxy.end
+  end
+
+  it "should add newlines to buffered messages except the last one" do
+    @proxy.start
+    @proxy.write("1")
+    @proxy.write("2")
+    @proxy.write("3")
+    assert_equal "1\n2\n3", @proxy.flush
   end
 
   it "should flush the buffered log and then start buffering again" do
-    @logdev.expects(:write).with("12")
     @proxy.start
     @proxy.write("1")
     @proxy.write("2")
-    @proxy.flush
+    assert_equal "1\n2", @proxy.flush
     @proxy.write("3")
+    assert_equal "3\n", @proxy.current_log
   end
 
   it "should allow access to the current buffer in string form" do
     @proxy.start
     @proxy.write("1")
     @proxy.write("2")
-    assert_equal "12", @proxy.current_log
+    assert_equal "1\n2\n", @proxy.current_log
   end
 end

@@ -16,7 +16,13 @@ class BufferedLogger
     def end
       result = string_io.string
       destroy_thread_local
-      result
+      result.chop
+    end
+
+    def flush
+      output = self.end
+      start
+      output
     end
 
     def start
